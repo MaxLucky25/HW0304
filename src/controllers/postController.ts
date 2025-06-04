@@ -16,29 +16,103 @@ export class PostController {
         @inject(TYPES.CommentService) private commentService: CommentService,
     ) {}
 
-    getAllPosts = async (req: Request, res: Response) => {
-        const result = await this.postQueryRepository.getPosts(req.query);
-        res.status(200).json(result);
-    };
+    getAll = async (req: Request, res: Response) => {
+        const result = await this.postQueryRepository.getPosts(req.query, req.userId ?? undefined);
+        res.send(result);
+    }
 
-    getPostById = async (req: Request, res: Response) => {
-        const post = await this.postQueryRepository.getById(req.params.id);
-        post ? res.json(post) : res.sendStatus(404);
-    };
+    getById = async (req: Request, res: Response) => {
+        const post = await this.postQueryRepository.getById(req.params.id, req.userId ?? undefined);
+        if (!post) {
+            res.sendStatus(404);
+            return;
+        }
+        res.send(post);
+    }
+
+    getPostsByBlogId = async (req: Request, res: Response) => {
+        const result = await this.postQueryRepository.getPostsByBlogId(req.params.blogId, req.query, req.userId ?? undefined);
+        res.send(result);
+    }
 
     createPost = async (req: Request, res: Response) => {
-        const newPost = await this.postService.createPost(req.body);
-        newPost ? res.status(201).json(newPost) : res.sendStatus(400);
+        const newPost = await this.postService.createPost({
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.body.blogId,
+        });
+
+        if (!newPost) {
+            res.sendStatus(404);
+            return;
+        }
+        res.status(201).send(newPost);
+    }
+
+    createPostByBlogId = async (req: Request, res: Response) => {
+        const newPost = await this.postService.createPost({
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.params.blogId,
+        });
+
+        if (!newPost) {
+            res.sendStatus(404);
+            return;
+        }
+        res.status(201).send(newPost);
+    }
+
+    setLikeStatus = async (req: Request, res: Response) => {
+        const postId = req.params.postId;
+        const userId = req.userId!;
+        const likeStatus = req.body.likeStatus;
+
+        const result = await this.postService.updateLikeStatus(postId, userId, likeStatus);
+
+        switch (result) {
+            case LikeUpdateResult.NotFound:
+                res.sendStatus(404);
+                return;
+            case LikeUpdateResult.NoChange:
+            case LikeUpdateResult.Updated:
+                const updatedPost = await this.postQueryRepository.getById(postId, userId);
+                if (!updatedPost) {
+                    res.sendStatus(404);
+                    return;
+                }
+                res.sendStatus(204);
+                return;
+            default:
+                res.sendStatus(500);
+                return;
+        }
     }
 
     updatePost = async (req: Request, res: Response) => {
-        const updated = await this.postService.updatePost(req.params.id, req.body);
-        updated ? res.sendStatus(204) : res.sendStatus(404);
+        const isUpdated = await this.postService.updatePost(req.params.id, {
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.body.blogId,
+        });
+
+        if (!isUpdated) {
+            res.sendStatus(404);
+            return;
+        }
+        res.sendStatus(204);
     }
 
     deletePost = async (req: Request, res: Response) => {
-        const deleted = await this.postService.deletePost(req.params.id);
-        deleted ? res.sendStatus(204) : res.sendStatus(404);
+        const isDeleted = await this.postService.deletePost(req.params.id);
+        if (!isDeleted) {
+            res.sendStatus(404);
+            return;
+        }
+        res.sendStatus(204);
     }
 
     createComment = async (req: Request, res: Response) => {
@@ -65,26 +139,4 @@ export class PostController {
             res.status(200).json(comments);
         }
     }
-
-    setLikeStatus = async (req: Request, res: Response) => {
-        const postId = req.params.postId;
-        const userId = req.userId!;
-        const likeStatus = req.body.likeStatus;
-
-        const result = await this.postService.updateLikeStatus(postId, userId, likeStatus);
-
-        switch (result) {
-            case LikeUpdateResult.NotFound:
-                res.sendStatus(404);
-                return;
-            case LikeUpdateResult.NoChange:
-            case LikeUpdateResult.Updated:
-                res.sendStatus(204);
-                return;
-            default:
-                res.sendStatus(500);
-                return;
-        }
-    }
-
 }

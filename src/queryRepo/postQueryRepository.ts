@@ -6,12 +6,12 @@ import {toObjectId} from "../utility/toObjectId";
 @injectable()
 export class PostQueryRepository {
 
-    async getById(id: string): Promise<PostViewModel | null> {
+    async getById(id: string, userId?: string): Promise<PostViewModel | null> {
        const post = await PostModel.findOne({_id: toObjectId(id)});
-       return post ? post.toExtendedViewModel() : null;
+       return post ? post.toExtendedViewModel(userId) : null;
     }
 
-    async getPosts(query: any): Promise<any> {
+    async getPosts(query: any, userId?: string): Promise<any> {
         const { pageNumber, pageSize, sortBy, sortDirection } = getPaginationParams(query);
         const filter = {};
         const totalCount = await PostModel.countDocuments(filter);
@@ -22,7 +22,7 @@ export class PostQueryRepository {
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
 
-        const items = itemsDocs.map((post) => post.toExtendedViewModel());
+        const items = await Promise.all(itemsDocs.map((post) => post.toExtendedViewModel(userId)));
 
         return {
             pagesCount,
@@ -33,7 +33,7 @@ export class PostQueryRepository {
         };
     }
 
-    async getPostsByBlogId(blogId: string, query: any): Promise<any> {
+    async getPostsByBlogId(blogId: string, query: any, userId?: string): Promise<any> {
         const { pageNumber, pageSize, sortBy, sortDirection } = getPaginationParams(query);
         const filter = { blogId: toObjectId(blogId) };
         const totalCount = await PostModel.countDocuments(filter);
@@ -44,7 +44,7 @@ export class PostQueryRepository {
             .limit(pageSize)
 
 
-        const items = itemsDocs.map((post) => post.toExtendedViewModel());
+        const items = await Promise.all(itemsDocs.map((post) => post.toExtendedViewModel(userId)));
 
         return {
             pagesCount,

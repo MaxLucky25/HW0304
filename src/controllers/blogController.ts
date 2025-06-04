@@ -44,7 +44,7 @@ export class BlogController {
             res.sendStatus(404);
             return;
         }
-        const result = await this.postQueryRepository.getPostsByBlogId(req.params.id, req.query);
+        const result = await this.postQueryRepository.getPostsByBlogId(req.params.id, req.query, req.userId || undefined);
         res.status(200).json(result);
     };
 
@@ -55,8 +55,10 @@ export class BlogController {
             return;
         }
         const newPost = await this.blogService.createPostsForBlog(req.params.id, req.body);
-        newPost ? res.status(201).json(newPost) : res.sendStatus(400);
+        if (!newPost) {
+            res.sendStatus(404);
+            return;
+        }
+        res.status(201).json(newPost);
     };
-
-
 }

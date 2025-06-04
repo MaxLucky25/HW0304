@@ -12,9 +12,15 @@ const controller = container.get<PostController>(TYPES.PostController);
 
 export const postsRouter = Router();
 
-postsRouter.get('/', controller.getAllPosts);
+postsRouter.get('/',
+    optionalAuthJwtMiddleware,
+    controller.getAll
+);
 
-postsRouter.get('/:id', controller.getPostById);
+postsRouter.get('/:id',
+    optionalAuthJwtMiddleware,
+    controller.getById
+);
 
 postsRouter.post('/',
     authBasicMiddleware,
@@ -48,7 +54,7 @@ postsRouter.post('/:postId/comments',
 );
 
 postsRouter.put('/:postId/like-status',
-    optionalAuthJwtMiddleware,
+    authJwtMiddleware,
     likeStatusValidator,
     inputCheckErrorsMiddleware,
     controller.setLikeStatus

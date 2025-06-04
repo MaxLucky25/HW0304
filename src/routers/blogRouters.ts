@@ -6,6 +6,7 @@ import {postForSpecificBlogValidators} from "../validators/postForSpecificBlogVa
 import TYPES from "../di/types";
 import {BlogController} from "../controllers/blogController";
 import container from "../di/iosContaner";
+import {optionalAuthJwtMiddleware} from "../middlewares/authJwtMiddleware";
 
 const controller = container.get<BlogController>(TYPES.BlogController);
 export const blogsRouter = Router();
@@ -33,8 +34,10 @@ blogsRouter.delete('/:id',
     controller.deleteBlog
 );
 
-blogsRouter.get('/:id/posts', controller.getPostsForBlog);
-
+blogsRouter.get('/:id/posts',
+    optionalAuthJwtMiddleware,
+    controller.getPostsForBlog
+);
 
 blogsRouter.post('/:id/posts',
     authBasicMiddleware,

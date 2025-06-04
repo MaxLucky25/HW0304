@@ -126,7 +126,6 @@ PostSchema.methods.toExtendedViewModel = async function(userId?: string): Promis
         PostLikeModel.find({ postId: post._id.toString(), status: LikeStatusEnum.Like })
             .sort({ addedAt: -1 })
             .limit(3)
-            .select({ userId: 1, login: 1, addedAt: 1, _id: 0 })
             .lean()
     ]);
 
@@ -137,16 +136,10 @@ PostSchema.methods.toExtendedViewModel = async function(userId?: string): Promis
     }));
 
     return {
-        id: post._id.toString(),
-        title: post.title,
-        shortDescription: post.shortDescription,
-        content: post.content,
-        blogId: post.blogId.toString(),
-        blogName: post.blogName,
-        createdAt: post.createdAt,
+        ...this.toViewModel(),
         extendedLikesInfo: {
-            likesCount: post.likesCount,
-            dislikesCount: post.dislikesCount,
+            likesCount: this.likesCount,
+            dislikesCount: this.dislikesCount,
             myStatus: myLike?.status ?? LikeStatusEnum.None,
             newestLikes
         }
