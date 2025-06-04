@@ -19,7 +19,7 @@ export class PostRepository {
             blogName: blog.name,
         });
 
-        return newPost.toViewModel();
+        return newPost.toExtendedViewModel();
     }
 
     async update(id: string, input:PostDto): Promise<boolean> {
@@ -43,7 +43,7 @@ export class PostRepository {
         return result.deletedCount === 1;
     }
 
-    async updateLikeStatus(postId: string, userId: string, likeStatus: LikeStatusEnum): Promise<'Updated' | 'NoChange' | 'NotFound'> {
+    async updateLikeStatus(postId: string, userId: string, likeStatus: LikeStatusEnum): Promise<LikeUpdateResult> {
         const post = await PostModel.findById(postId);
         if (!post) return LikeUpdateResult.NotFound;
 

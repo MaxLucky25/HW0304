@@ -8,7 +8,7 @@ export class PostQueryRepository {
 
     async getById(id: string): Promise<PostViewModel | null> {
        const post = await PostModel.findOne({_id: toObjectId(id)});
-       return post ? post.toViewModel() : null;
+       return post ? post.toExtendedViewModel() : null;
     }
 
     async getPosts(query: any): Promise<any> {
