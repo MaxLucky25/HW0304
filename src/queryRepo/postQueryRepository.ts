@@ -22,7 +22,7 @@ export class PostQueryRepository {
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
 
-        const items = itemsDocs.map((post) => post.toViewModel());
+        const items = itemsDocs.map((post) => post.toExtendedViewModel());
 
         return {
             pagesCount,
@@ -44,7 +44,7 @@ export class PostQueryRepository {
             .limit(pageSize)
 
 
-        const items = itemsDocs.map((post) => post.toViewModel());
+        const items = itemsDocs.map((post) => post.toExtendedViewModel());
 
         return {
             pagesCount,
