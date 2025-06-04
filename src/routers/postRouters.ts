@@ -48,7 +48,7 @@ postsRouter.post('/:postId/comments',
 );
 
 postsRouter.put('/:postId/like-status',
-    authJwtMiddleware,
+    optionalAuthJwtMiddleware,
     likeStatusValidator,
     inputCheckErrorsMiddleware,
     controller.setLikeStatus
