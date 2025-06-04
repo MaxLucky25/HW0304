@@ -30,10 +30,6 @@ export class PostController {
         res.send(post);
     }
 
-    getPostsByBlogId = async (req: Request, res: Response) => {
-        const result = await this.postQueryRepository.getPostsByBlogId(req.params.blogId, req.query, req.userId ?? undefined);
-        res.send(result);
-    }
 
     createPost = async (req: Request, res: Response) => {
         const newPost = await this.postService.createPost({
@@ -50,20 +46,6 @@ export class PostController {
         res.status(201).send(newPost);
     }
 
-    createPostByBlogId = async (req: Request, res: Response) => {
-        const newPost = await this.postService.createPost({
-            title: req.body.title,
-            shortDescription: req.body.shortDescription,
-            content: req.body.content,
-            blogId: req.params.blogId,
-        });
-
-        if (!newPost) {
-            res.sendStatus(404);
-            return;
-        }
-        res.status(201).send(newPost);
-    }
 
     setLikeStatus = async (req: Request, res: Response) => {
         const postId = req.params.postId;
